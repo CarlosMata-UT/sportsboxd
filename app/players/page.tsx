@@ -40,6 +40,7 @@ export default function PlayersPage() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
+  const [isSearching, setIsSearching] = useState(false)
   const [modalTarget, setModalTarget] = useState<{ id: string; name: string } | null>(null)
 
   const fetchPlayers = async (pageNum: number, reset: boolean = false) => {
@@ -65,30 +66,50 @@ export default function PlayersPage() {
     setLoading(false)
   }
 
+  const searchPlayers = async (term: string, sport: string) => {
+    setLoading(true)
+    setIsSearching(true)
+
+    let query = supabase
+      .from('players')
+      .select('*')
+      .order('name', { ascending: true })
+      .limit(100)
+
+    if (sport !== 'All') {
+      query = query.eq('sport', sport)
+    }
+
+    if (term.trim()) {
+      query = query.or(
+        `name.ilike.%${term}%,team.ilike.%${term}%,position.ilike.%${term}%`
+      )
+    }
+
+    const { data } = await query
+    if (data) setFiltered(data)
+    setLoading(false)
+  }
+
   useEffect(() => {
     fetchPlayers(0, true)
   }, [])
 
-  // Re-filter whenever sport filter or search changes
   useEffect(() => {
-    let results = players
+    const hasSearch = search.trim() !== ''
+    const hasSportFilter = activeSport !== 'All'
 
-    if (activeSport !== 'All') {
-      results = results.filter((p) => p.sport === activeSport)
+    if (hasSearch || hasSportFilter) {
+      const timeout = setTimeout(() => {
+        searchPlayers(search, activeSport)
+      }, 400)
+      return () => clearTimeout(timeout)
+    } else {
+      setIsSearching(false)
+      fetchPlayers(0, true)
+      setPage(0)
     }
-
-    if (search.trim()) {
-      const term = search.toLowerCase()
-      results = results.filter(
-        (p) =>
-          p.name.toLowerCase().includes(term) ||
-          p.team?.toLowerCase().includes(term) ||
-          p.position?.toLowerCase().includes(term)
-      )
-    }
-
-    setFiltered(results)
-  }, [activeSport, search, players])
+  }, [search, activeSport])
 
   return (
     <div style={{ background: '#0e1015', minHeight: '100vh' }}>
@@ -169,7 +190,7 @@ export default function PlayersPage() {
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
 
         <p style={{ color: '#3a4055', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1.5rem' }}>
-          {filtered.length} {filtered.length === 1 ? 'player' : 'players'} loaded
+          {isSearching ? `${filtered.length} results found` : `${filtered.length} players loaded`}
         </p>
 
         {loading && page === 0 ? (
@@ -209,7 +230,6 @@ export default function PlayersPage() {
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2a2f3e')}
                   onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#1e2330')}
                 >
-                  {/* Avatar with player initials */}
                   <div style={{
                     width: '56px',
                     height: '56px',
@@ -247,7 +267,6 @@ export default function PlayersPage() {
                     </div>
                   )}
 
-                  {/* Rate button */}
                   <button
                     onClick={() => setModalTarget({ id: player.id, name: player.name })}
                     style={{
@@ -280,8 +299,8 @@ export default function PlayersPage() {
           </div>
         )}
 
-        {/* Load more button */}
-        {hasMore && !loading && (
+        {/* Load more — hidden when searching */}
+        {hasMore && !loading && !isSearching && (
           <div style={{ textAlign: 'center', marginTop: '2rem' }}>
             <button
               onClick={() => {
@@ -323,7 +342,6 @@ export default function PlayersPage() {
 
       </div>
 
-      {/* Rating modal */}
       {modalTarget && (
         <RatingModal
           targetId={modalTarget.id}

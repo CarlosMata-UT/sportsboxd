@@ -43,6 +43,7 @@ export default function GamesPage() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
+  const [isSearching, setIsSearching] = useState(false)
   const [modalTarget, setModalTarget] = useState<{ id: string; name: string } | null>(null)
 
   const fetchGames = async (pageNum: number, reset: boolean = false) => {
@@ -68,30 +69,50 @@ export default function GamesPage() {
     setLoading(false)
   }
 
+  const searchGames = async (term: string, sport: string) => {
+    setLoading(true)
+    setIsSearching(true)
+
+    let query = supabase
+      .from('games')
+      .select('*')
+      .order('game_date', { ascending: false })
+      .limit(100)
+
+    if (sport !== 'All') {
+      query = query.eq('sport', sport)
+    }
+
+    if (term.trim()) {
+      query = query.or(
+        `home_team.ilike.%${term}%,away_team.ilike.%${term}%,notable.ilike.%${term}%`
+      )
+    }
+
+    const { data } = await query
+    if (data) setFiltered(data)
+    setLoading(false)
+  }
+
   useEffect(() => {
     fetchGames(0, true)
   }, [])
 
-  // Re-filter whenever sport filter or search changes
   useEffect(() => {
-    let results = games
+    const hasSearch = search.trim() !== ''
+    const hasSportFilter = activeSport !== 'All'
 
-    if (activeSport !== 'All') {
-      results = results.filter((g) => g.sport === activeSport)
+    if (hasSearch || hasSportFilter) {
+      const timeout = setTimeout(() => {
+        searchGames(search, activeSport)
+      }, 400)
+      return () => clearTimeout(timeout)
+    } else {
+      setIsSearching(false)
+      fetchGames(0, true)
+      setPage(0)
     }
-
-    if (search.trim()) {
-      const term = search.toLowerCase()
-      results = results.filter(
-        (g) =>
-          g.home_team.toLowerCase().includes(term) ||
-          g.away_team.toLowerCase().includes(term) ||
-          g.notable?.toLowerCase().includes(term)
-      )
-    }
-
-    setFiltered(results)
-  }, [activeSport, search, games])
+  }, [search, activeSport])
 
   return (
     <div style={{ background: '#0e1015', minHeight: '100vh' }}>
@@ -172,7 +193,7 @@ export default function GamesPage() {
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
 
         <p style={{ color: '#3a4055', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1.5rem' }}>
-          {filtered.length} {filtered.length === 1 ? 'game' : 'games'} loaded
+          {isSearching ? `${filtered.length} results found` : `${filtered.length} games loaded`}
         </p>
 
         {loading && page === 0 ? (
@@ -246,7 +267,6 @@ export default function GamesPage() {
                     </div>
                   )}
 
-                  {/* Rate button */}
                   <button
                     onClick={() => setModalTarget({ id: game.id, name: `${game.home_team} vs ${game.away_team}` })}
                     style={{
@@ -280,8 +300,8 @@ export default function GamesPage() {
           </div>
         )}
 
-        {/* Load more button */}
-        {hasMore && !loading && (
+        {/* Load more — hidden when searching */}
+        {hasMore && !loading && !isSearching && (
           <div style={{ textAlign: 'center', marginTop: '2rem' }}>
             <button
               onClick={() => {
@@ -323,7 +343,6 @@ export default function GamesPage() {
 
       </div>
 
-      {/* Rating modal */}
       {modalTarget && (
         <RatingModal
           targetId={modalTarget.id}
