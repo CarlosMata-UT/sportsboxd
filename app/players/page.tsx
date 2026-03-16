@@ -1,8 +1,8 @@
 'use client'
 
-import RatingModal from '../components/RatingModal'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import RatingModal from '../components/RatingModal'
 
 type Player = {
   id: string
@@ -31,14 +31,13 @@ const avatarColors: Record<string, { bg: string; color: string }> = {
 
 const SPORTS = ['All', 'NBA', 'NFL', 'MLB', 'NHL', 'Soccer']
 
-const [modalTarget, setModalTarget] = useState<{ id: string; name: string } | null>(null)
-
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([])
   const [filtered, setFiltered] = useState<Player[]>([])
   const [activeSport, setActiveSport] = useState('All')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [modalTarget, setModalTarget] = useState<{ id: string; name: string } | null>(null)
 
   // Fetch all players from Supabase on page load
   useEffect(() => {
