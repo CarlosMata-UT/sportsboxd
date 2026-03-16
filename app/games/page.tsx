@@ -32,8 +32,8 @@ const sportColors: Record<string, string> = {
   Soccer: 'linear-gradient(100deg, #004012, #c8b400)',
 }
 
-// All sports options for the filter bar
 const SPORTS = ['All', 'NBA', 'NFL', 'MLB', 'NHL', 'Soccer']
+const PAGE_SIZE = 50
 
 export default function GamesPage() {
   const [games, setGames] = useState<Game[]>([])
@@ -41,27 +41,38 @@ export default function GamesPage() {
   const [activeSport, setActiveSport] = useState('All')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
   const [modalTarget, setModalTarget] = useState<{ id: string; name: string } | null>(null)
 
-  // Fetch all games from Supabase on page load
-  useEffect(() => {
-    const fetchGames = async () => {
-      const { data } = await supabase
-        .from('games')
-        .select('*')
-        .order('game_date', { ascending: false })
+  const fetchGames = async (pageNum: number, reset: boolean = false) => {
+    setLoading(true)
 
-      if (data) {
+    const { data } = await supabase
+      .from('games')
+      .select('*')
+      .order('game_date', { ascending: false })
+      .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1)
+
+    if (data) {
+      if (reset) {
         setGames(data)
         setFiltered(data)
+      } else {
+        setGames((prev) => [...prev, ...data])
+        setFiltered((prev) => [...prev, ...data])
       }
-      setLoading(false)
+      setHasMore(data.length === PAGE_SIZE)
     }
 
-    fetchGames()
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchGames(0, true)
   }, [])
 
-  // Re-filter whenever the sport filter or search term changes
+  // Re-filter whenever sport filter or search changes
   useEffect(() => {
     let results = games
 
@@ -110,14 +121,12 @@ export default function GamesPage() {
       <div style={{
         background: '#12151c',
         borderBottom: '1px solid #1e2330',
-        padding: '0 2rem 16px',
+        padding: '16px 2rem',
         display: 'flex',
         gap: '12px',
         alignItems: 'center',
         flexWrap: 'wrap'
       }}>
-
-        {/* Search input */}
         <input
           type="text"
           placeholder="Search teams or keywords..."
@@ -135,7 +144,6 @@ export default function GamesPage() {
           }}
         />
 
-        {/* Sport filter pills */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {SPORTS.map((sport) => (
             <button
@@ -158,18 +166,16 @@ export default function GamesPage() {
             </button>
           ))}
         </div>
-
       </div>
 
       {/* Games grid */}
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
 
-        {/* Result count */}
         <p style={{ color: '#3a4055', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1.5rem' }}>
-          {filtered.length} {filtered.length === 1 ? 'game' : 'games'} found
+          {filtered.length} {filtered.length === 1 ? 'game' : 'games'} loaded
         </p>
 
-        {loading ? (
+        {loading && page === 0 ? (
           <p style={{ color: '#3a4055', fontSize: '14px' }}>Loading...</p>
         ) : filtered.length === 0 ? (
           <div style={{
@@ -197,7 +203,6 @@ export default function GamesPage() {
                   borderRadius: '8px',
                   overflow: 'hidden',
                   cursor: 'pointer',
-                  transition: 'border-color 0.15s',
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2a2f3e')}
                 onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#1e2330')}
@@ -267,25 +272,68 @@ export default function GamesPage() {
                       e.currentTarget.style.color = '#7a8099'
                     }}
                   >
-                  ★ Rate this game
-                </button>
+                    ★ Rate this game
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        {/* Load more button */}
+        {hasMore && !loading && (
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <button
+              onClick={() => {
+                const nextPage = page + 1
+                setPage(nextPage)
+                fetchGames(nextPage)
+              }}
+              style={{
+                background: 'transparent',
+                border: '1px solid #2a2f3e',
+                borderRadius: '6px',
+                color: '#7a8099',
+                fontSize: '13px',
+                fontWeight: '700',
+                letterSpacing: '1px',
+                textTransform: 'uppercase',
+                padding: '12px 32px',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#e8a432'
+                e.currentTarget.style.color = '#e8a432'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#2a2f3e'
+                e.currentTarget.style.color = '#7a8099'
+              }}
+            >
+              Load more games
+            </button>
+          </div>
+        )}
+
+        {loading && page > 0 && (
+          <p style={{ textAlign: 'center', color: '#3a4055', fontSize: '13px', marginTop: '2rem' }}>
+            Loading more...
+          </p>
+        )}
+
       </div>
-    {modalTarget && (
-    <RatingModal
-      targetId={modalTarget.id}
-      targetName={modalTarget.name}
-      targetType="game"
-      onClose={() => setModalTarget(null)}
-      onSuccess={() => {
-        setModalTarget(null)
-      }}
-    />
-  )}
+
+      {/* Rating modal */}
+      {modalTarget && (
+        <RatingModal
+          targetId={modalTarget.id}
+          targetName={modalTarget.name}
+          targetType="game"
+          onClose={() => setModalTarget(null)}
+          onSuccess={() => setModalTarget(null)}
+        />
+      )}
+
     </div>
   )
 }
