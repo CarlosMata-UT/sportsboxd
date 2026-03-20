@@ -24,12 +24,13 @@ const sportEmoji: Record<string, string> = {
   Soccer: '⚽',
 }
 
-const sportColors: Record<string, string> = {
-  NBA: 'linear-gradient(100deg, #1a3a6c, #c9082a)',
-  NFL: 'linear-gradient(100deg, #013369, #d50a0a)',
-  MLB: 'linear-gradient(100deg, #002d72, #e31837)',
-  NHL: 'linear-gradient(100deg, #003087, #6d6e71)',
-  Soccer: 'linear-gradient(100deg, #004012, #c8b400)',
+// Gradient layered over a sport photo for card banners
+const sportBanners: Record<string, string> = {
+  NBA: `linear-gradient(100deg, rgba(26,58,108,0.93), rgba(201,8,42,0.88)), url('https://images.unsplash.com/photo-1546519638405-a9d1b16a5b24?auto=format&fit=crop&w=800&q=80')`,
+  NFL: `linear-gradient(100deg, rgba(1,51,105,0.93), rgba(213,10,10,0.88)), url('https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=800&q=80')`,
+  MLB: `linear-gradient(100deg, rgba(0,45,114,0.93), rgba(227,24,55,0.88)), url('https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&w=800&q=80')`,
+  NHL: `linear-gradient(100deg, rgba(0,48,135,0.93), rgba(109,110,113,0.88)), url('https://images.unsplash.com/photo-1515703407324-5f753afd8be8?auto=format&fit=crop&w=800&q=80')`,
+  Soccer: `linear-gradient(100deg, rgba(0,64,18,0.93), rgba(200,180,0,0.88)), url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80')`,
 }
 
 const SPORTS = ['All', 'NBA', 'NFL', 'MLB', 'NHL', 'Soccer']
@@ -117,28 +118,62 @@ export default function GamesPage() {
   return (
     <div style={{ background: '#0e1015', minHeight: '100vh' }}>
 
-      {/* Page header */}
+      {/* ── Page header with sports imagery ────────────────── */}
       <div style={{
-        padding: '48px 2rem 32px',
+        position: 'relative',
+        overflow: 'hidden',
         borderBottom: '1px solid #1e2330',
-        background: '#12151c'
       }}>
-        <h1 style={{
-          fontSize: '36px',
-          fontWeight: '800',
-          letterSpacing: '4px',
-          textTransform: 'uppercase',
-          color: '#e8e4dc',
-          marginBottom: '4px'
-        }}>
-          Games
-        </h1>
-        <p style={{ color: '#3a4055', fontSize: '13px', letterSpacing: '0.5px' }}>
-          Browse and rate every game in the database
-        </p>
+        {/* Background image */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `url('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=80')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 40%',
+          filter: 'brightness(0.2)',
+        }} />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(to right, rgba(14,16,21,0.95) 40%, rgba(14,16,21,0.5) 100%)',
+        }} />
+
+        <div style={{ position: 'relative', zIndex: 1, padding: '52px 2rem 36px' }}>
+          <div style={{
+            display: 'inline-block',
+            background: 'rgba(232,164,50,0.1)',
+            border: '1px solid rgba(232,164,50,0.2)',
+            color: '#e8a432',
+            fontSize: '9px',
+            fontWeight: '700',
+            letterSpacing: '3px',
+            textTransform: 'uppercase',
+            padding: '4px 14px',
+            borderRadius: '20px',
+            marginBottom: '14px',
+          }}>
+            Database
+          </div>
+          <h1 style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: '52px',
+            fontWeight: '900',
+            letterSpacing: '4px',
+            textTransform: 'uppercase',
+            color: '#f0ece4',
+            marginBottom: '6px',
+            lineHeight: 1,
+          }}>
+            Games
+          </h1>
+          <p style={{ color: '#3a4055', fontSize: '13px', letterSpacing: '0.5px' }}>
+            Browse and rate every game in the database
+          </p>
+        </div>
       </div>
 
-      {/* Search and filter bar */}
+      {/* ── Search and filter bar ───────────────────────────── */}
       <div style={{
         background: '#12151c',
         borderBottom: '1px solid #1e2330',
@@ -146,7 +181,7 @@ export default function GamesPage() {
         display: 'flex',
         gap: '12px',
         alignItems: 'center',
-        flexWrap: 'wrap'
+        flexWrap: 'wrap',
       }}>
         <input
           type="text"
@@ -161,7 +196,7 @@ export default function GamesPage() {
             fontSize: '13px',
             padding: '8px 14px',
             outline: 'none',
-            width: '260px'
+            width: '260px',
           }}
         />
 
@@ -189,7 +224,7 @@ export default function GamesPage() {
         </div>
       </div>
 
-      {/* Games grid */}
+      {/* ── Games grid ─────────────────────────────────────── */}
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
 
         <p style={{ color: '#3a4055', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1.5rem' }}>
@@ -202,9 +237,9 @@ export default function GamesPage() {
           <div style={{
             background: '#151820',
             border: '1px solid #1e2330',
-            borderRadius: '8px',
+            borderRadius: '10px',
             padding: '60px',
-            textAlign: 'center'
+            textAlign: 'center',
           }}>
             <p style={{ color: '#3a4055', fontSize: '14px', marginBottom: '8px' }}>No games found.</p>
             <p style={{ color: '#2a2f3e', fontSize: '12px' }}>Try a different search or sport filter.</p>
@@ -212,8 +247,8 @@ export default function GamesPage() {
         ) : (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-            gap: '1rem'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+            gap: '1rem',
           }}>
             {filtered.map((game) => (
               <div
@@ -221,30 +256,72 @@ export default function GamesPage() {
                 style={{
                   background: '#151820',
                   border: '1px solid #1e2330',
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   overflow: 'hidden',
                   cursor: 'pointer',
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2a2f3e')}
                 onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#1e2330')}
               >
-                {/* Sport color banner with teams and scores */}
+                {/* Banner with sport photo texture */}
                 <div style={{
-                  height: '90px',
-                  background: sportColors[game.sport] || 'linear-gradient(100deg, #1a1d26, #2a2f3e)',
+                  height: '104px',
+                  backgroundImage: sportBanners[game.sport] || 'linear-gradient(100deg, #1a1d26, #2a2f3e)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '0 20px'
+                  padding: '0 20px',
+                  position: 'relative',
                 }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff', letterSpacing: '1px' }}>{game.home_team}</div>
-                    <div style={{ fontSize: '24px', fontWeight: '800', color: '#fff' }}>{game.home_score}</div>
+                  <div style={{
+                    position: 'absolute',
+                    top: '8px',
+                    left: '10px',
+                    fontSize: '9px',
+                    fontWeight: '700',
+                    letterSpacing: '2px',
+                    color: 'rgba(255,255,255,0.4)',
+                    textTransform: 'uppercase',
+                  }}>
+                    {game.sport}
                   </div>
-                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontWeight: '600', letterSpacing: '1px' }}>FINAL</div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff', letterSpacing: '1px' }}>{game.away_team}</div>
-                    <div style={{ fontSize: '24px', fontWeight: '800', color: '#fff' }}>{game.away_score}</div>
+
+                  <div style={{ textAlign: 'center', zIndex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff', letterSpacing: '0.5px', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+                      {game.home_team}
+                    </div>
+                    <div style={{
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontSize: '30px',
+                      fontWeight: '800',
+                      color: '#fff',
+                      lineHeight: 1,
+                      textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+                    }}>
+                      {game.home_score}
+                    </div>
+                  </div>
+
+                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '700', letterSpacing: '2px' }}>
+                    FINAL
+                  </div>
+
+                  <div style={{ textAlign: 'center', zIndex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff', letterSpacing: '0.5px', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+                      {game.away_team}
+                    </div>
+                    <div style={{
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontSize: '30px',
+                      fontWeight: '800',
+                      color: '#fff',
+                      lineHeight: 1,
+                      textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+                    }}>
+                      {game.away_score}
+                    </div>
                   </div>
                 </div>
 
@@ -280,7 +357,7 @@ export default function GamesPage() {
                       fontWeight: '700',
                       letterSpacing: '1px',
                       textTransform: 'uppercase',
-                      padding: '7px',
+                      padding: '8px',
                       cursor: 'pointer',
                     }}
                     onMouseEnter={(e) => {
@@ -300,7 +377,6 @@ export default function GamesPage() {
           </div>
         )}
 
-        {/* Load more — hidden when searching */}
         {hasMore && !loading && !isSearching && (
           <div style={{ textAlign: 'center', marginTop: '2rem' }}>
             <button

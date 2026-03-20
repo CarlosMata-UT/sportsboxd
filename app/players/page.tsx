@@ -21,12 +21,12 @@ const sportEmoji: Record<string, string> = {
   Soccer: '⚽',
 }
 
-const avatarColors: Record<string, { bg: string; color: string }> = {
-  NBA: { bg: '#0a1e3a', color: '#5b9ee8' },
-  NFL: { bg: '#1a0808', color: '#e85b5b' },
-  MLB: { bg: '#0a2010', color: '#5bbf7a' },
-  NHL: { bg: '#0a1530', color: '#7aa8e8' },
-  Soccer: { bg: '#1a1a08', color: '#d4c84a' },
+const avatarColors: Record<string, { bg: string; color: string; border: string }> = {
+  NBA: { bg: '#0a1e3a', color: '#5b9ee8', border: '#1a3a6c' },
+  NFL: { bg: '#1a0808', color: '#e85b5b', border: '#3a1010' },
+  MLB: { bg: '#0a2010', color: '#5bbf7a', border: '#143020' },
+  NHL: { bg: '#0a1530', color: '#7aa8e8', border: '#162040' },
+  Soccer: { bg: '#1a1a08', color: '#d4c84a', border: '#2a2a10' },
 }
 
 const SPORTS = ['All', 'NBA', 'NFL', 'MLB', 'NHL', 'Soccer']
@@ -114,28 +114,62 @@ export default function PlayersPage() {
   return (
     <div style={{ background: '#0e1015', minHeight: '100vh' }}>
 
-      {/* Page header */}
+      {/* ── Page header with sports imagery ────────────────── */}
       <div style={{
-        padding: '48px 2rem 32px',
+        position: 'relative',
+        overflow: 'hidden',
         borderBottom: '1px solid #1e2330',
-        background: '#12151c'
       }}>
-        <h1 style={{
-          fontSize: '36px',
-          fontWeight: '800',
-          letterSpacing: '4px',
-          textTransform: 'uppercase',
-          color: '#e8e4dc',
-          marginBottom: '4px'
-        }}>
-          Players
-        </h1>
-        <p style={{ color: '#3a4055', fontSize: '13px', letterSpacing: '0.5px' }}>
-          Browse and rate the greatest players of all time
-        </p>
+        {/* Background photo */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `url('https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&w=1600&q=80')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 30%',
+          filter: 'brightness(0.18)',
+        }} />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(to right, rgba(14,16,21,0.96) 35%, rgba(14,16,21,0.5) 100%)',
+        }} />
+
+        <div style={{ position: 'relative', zIndex: 1, padding: '52px 2rem 36px' }}>
+          <div style={{
+            display: 'inline-block',
+            background: 'rgba(232,164,50,0.1)',
+            border: '1px solid rgba(232,164,50,0.2)',
+            color: '#e8a432',
+            fontSize: '9px',
+            fontWeight: '700',
+            letterSpacing: '3px',
+            textTransform: 'uppercase',
+            padding: '4px 14px',
+            borderRadius: '20px',
+            marginBottom: '14px',
+          }}>
+            All Time Greats
+          </div>
+          <h1 style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: '52px',
+            fontWeight: '900',
+            letterSpacing: '4px',
+            textTransform: 'uppercase',
+            color: '#f0ece4',
+            marginBottom: '6px',
+            lineHeight: 1,
+          }}>
+            Players
+          </h1>
+          <p style={{ color: '#3a4055', fontSize: '13px', letterSpacing: '0.5px' }}>
+            Browse and rate the greatest players of all time
+          </p>
+        </div>
       </div>
 
-      {/* Search and filter bar */}
+      {/* ── Search and filter bar ───────────────────────────── */}
       <div style={{
         background: '#12151c',
         borderBottom: '1px solid #1e2330',
@@ -143,7 +177,7 @@ export default function PlayersPage() {
         display: 'flex',
         gap: '12px',
         alignItems: 'center',
-        flexWrap: 'wrap'
+        flexWrap: 'wrap',
       }}>
         <input
           type="text"
@@ -158,7 +192,7 @@ export default function PlayersPage() {
             fontSize: '13px',
             padding: '8px 14px',
             outline: 'none',
-            width: '280px'
+            width: '280px',
           }}
         />
 
@@ -186,7 +220,7 @@ export default function PlayersPage() {
         </div>
       </div>
 
-      {/* Players grid */}
+      {/* ── Players grid ───────────────────────────────────── */}
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
 
         <p style={{ color: '#3a4055', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1.5rem' }}>
@@ -199,9 +233,9 @@ export default function PlayersPage() {
           <div style={{
             background: '#151820',
             border: '1px solid #1e2330',
-            borderRadius: '8px',
+            borderRadius: '10px',
             padding: '60px',
-            textAlign: 'center'
+            textAlign: 'center',
           }}>
             <p style={{ color: '#3a4055', fontSize: '14px', marginBottom: '8px' }}>No players found.</p>
             <p style={{ color: '#2a2f3e', fontSize: '12px' }}>Try a different search or sport filter.</p>
@@ -210,10 +244,10 @@ export default function PlayersPage() {
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: '1rem'
+            gap: '1rem',
           }}>
             {filtered.map((player) => {
-              const avatarColor = avatarColors[player.sport] || { bg: '#1a1d26', color: '#7a8099' }
+              const ac = avatarColors[player.sport] || { bg: '#1a1d26', color: '#7a8099', border: '#2a2f3e' }
               const initials = player.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)
 
               return (
@@ -221,55 +255,89 @@ export default function PlayersPage() {
                   key={player.id}
                   style={{
                     background: '#151820',
-                    border: '1px solid #1e2330',
-                    borderRadius: '8px',
-                    padding: '20px 16px',
+                    border: `1px solid ${ac.border}`,
+                    borderRadius: '10px',
+                    padding: '22px 16px 18px',
                     textAlign: 'center',
                     cursor: 'pointer',
+                    position: 'relative',
+                    overflow: 'hidden',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2a2f3e')}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#1e2330')}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = ac.color)}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = ac.border)}
                 >
+                  {/* Top accent bar */}
                   <div style={{
-                    width: '56px',
-                    height: '56px',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '3px',
+                    background: `linear-gradient(90deg, ${ac.color}, transparent)`,
+                    opacity: 0.6,
+                  }} />
+
+                  {/* Avatar */}
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
                     borderRadius: '50%',
-                    background: avatarColor.bg,
-                    color: avatarColor.color,
+                    background: ac.bg,
+                    color: ac.color,
+                    border: `2px solid ${ac.border}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '18px',
-                    fontWeight: '700',
-                    margin: '0 auto 12px',
-                    letterSpacing: '1px'
+                    fontSize: '20px',
+                    fontWeight: '800',
+                    margin: '0 auto 14px',
+                    letterSpacing: '1px',
+                    fontFamily: "'Barlow Condensed', sans-serif",
                   }}>
                     {initials}
                   </div>
 
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#e8e4dc', marginBottom: '4px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#e8e4dc', marginBottom: '3px' }}>
                     {player.name}
                   </div>
 
-                  <div style={{ fontSize: '11px', color: '#3a4055', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
-                    {player.position} · {sportEmoji[player.sport]} {player.sport}
+                  <div style={{ fontSize: '11px', color: '#5a6070', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                    {player.position}
                   </div>
 
                   {player.team && (
-                    <div style={{ fontSize: '11px', color: '#2a2f3e', marginBottom: '4px' }}>
+                    <div style={{ fontSize: '11px', color: '#3a4055', marginBottom: '3px' }}>
                       {player.team}
                     </div>
                   )}
 
                   {player.era && (
-                    <div style={{ fontSize: '11px', color: '#2a2f3e', fontStyle: 'italic', marginBottom: '12px' }}>
+                    <div style={{ fontSize: '11px', color: '#2a2f3e', fontStyle: 'italic', marginBottom: '10px' }}>
                       {player.era}
                     </div>
                   )}
 
+                  {/* Sport badge */}
+                  <div style={{
+                    display: 'inline-block',
+                    background: ac.bg,
+                    color: ac.color,
+                    fontSize: '9px',
+                    fontWeight: '700',
+                    letterSpacing: '1.5px',
+                    textTransform: 'uppercase',
+                    padding: '3px 10px',
+                    borderRadius: '20px',
+                    border: `1px solid ${ac.border}`,
+                    marginBottom: '12px',
+                  }}>
+                    {sportEmoji[player.sport]} {player.sport}
+                  </div>
+
                   <button
                     onClick={() => setModalTarget({ id: player.id, name: player.name })}
                     style={{
+                      display: 'block',
                       width: '100%',
                       background: 'transparent',
                       border: '1px solid #2a2f3e',
@@ -279,7 +347,7 @@ export default function PlayersPage() {
                       fontWeight: '700',
                       letterSpacing: '1px',
                       textTransform: 'uppercase',
-                      padding: '7px',
+                      padding: '8px',
                       cursor: 'pointer',
                     }}
                     onMouseEnter={(e) => {
@@ -299,7 +367,6 @@ export default function PlayersPage() {
           </div>
         )}
 
-        {/* Load more — hidden when searching */}
         {hasMore && !loading && !isSearching && (
           <div style={{ textAlign: 'center', marginTop: '2rem' }}>
             <button

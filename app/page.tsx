@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
-// Types — these describe the shape of data coming back from Supabase
 type Game = {
   id: string
   sport: string
@@ -23,12 +22,63 @@ type Player = {
   team: string
 }
 
+const sportEmoji: Record<string, string> = {
+  NBA: '🏀',
+  NFL: '🏈',
+  MLB: '⚾',
+  NHL: '🏒',
+  Soccer: '⚽',
+}
+
+// Gradient over sport photo for game card banners
+const sportBanners: Record<string, string> = {
+  NBA: `linear-gradient(100deg, rgba(26,58,108,0.93), rgba(201,8,42,0.88)), url('https://images.unsplash.com/photo-1546519638405-a9d1b16a5b24?auto=format&fit=crop&w=800&q=80')`,
+  NFL: `linear-gradient(100deg, rgba(1,51,105,0.93), rgba(213,10,10,0.88)), url('https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=800&q=80')`,
+  MLB: `linear-gradient(100deg, rgba(0,45,114,0.93), rgba(227,24,55,0.88)), url('https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&w=800&q=80')`,
+  NHL: `linear-gradient(100deg, rgba(0,48,135,0.93), rgba(109,110,113,0.88)), url('https://images.unsplash.com/photo-1515703407324-5f753afd8be8?auto=format&fit=crop&w=800&q=80')`,
+  Soccer: `linear-gradient(100deg, rgba(0,64,18,0.93), rgba(200,180,0,0.88)), url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80')`,
+}
+
+const avatarColors: Record<string, { bg: string; color: string; border: string }> = {
+  NBA: { bg: '#0a1e3a', color: '#5b9ee8', border: '#1a3a6c' },
+  NFL: { bg: '#1a0808', color: '#e85b5b', border: '#3a1010' },
+  MLB: { bg: '#0a2010', color: '#5bbf7a', border: '#143020' },
+  NHL: { bg: '#0a1530', color: '#7aa8e8', border: '#162040' },
+  Soccer: { bg: '#1a1a08', color: '#d4c84a', border: '#2a2a10' },
+}
+
+const SPORT_SHOWCASE = [
+  {
+    sport: 'NBA',
+    name: 'Basketball',
+    href: '/games',
+    image: 'https://images.unsplash.com/photo-1546519638405-a9d1b16a5b24?auto=format&fit=crop&w=800&q=80',
+    gradient: 'linear-gradient(to top, rgba(14,16,21,0.96) 0%, rgba(26,58,108,0.55) 55%, rgba(0,0,0,0.1) 100%)',
+    accent: '#c9082a',
+  },
+  {
+    sport: 'NFL',
+    name: 'Football',
+    href: '/games',
+    image: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=800&q=80',
+    gradient: 'linear-gradient(to top, rgba(14,16,21,0.96) 0%, rgba(1,51,105,0.55) 55%, rgba(0,0,0,0.1) 100%)',
+    accent: '#d50a0a',
+  },
+  {
+    sport: 'MLB',
+    name: 'Baseball',
+    href: '/games',
+    image: 'https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&w=800&q=80',
+    gradient: 'linear-gradient(to top, rgba(14,16,21,0.96) 0%, rgba(0,45,114,0.55) 55%, rgba(0,0,0,0.1) 100%)',
+    accent: '#e31837',
+  },
+]
+
 export default function HomePage() {
   const [games, setGames] = useState<Game[]>([])
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Fetch games and players from Supabase when the page loads
   useEffect(() => {
     const fetchData = async () => {
       const { data: gamesData } = await supabase
@@ -50,154 +100,279 @@ export default function HomePage() {
     fetchData()
   }, [])
 
-  // Sport emoji map — used to display an icon next to each sport
-  const sportEmoji: Record<string, string> = {
-    NBA: '🏀',
-    NFL: '🏈',
-    MLB: '⚾',
-    NHL: '🏒',
-    Soccer: '⚽',
-  }
-
-  // Sport color map — gives each sport its own gradient on the game card banner
-  const sportColors: Record<string, string> = {
-    NBA: 'linear-gradient(100deg, #1a3a6c, #c9082a)',
-    NFL: 'linear-gradient(100deg, #013369, #d50a0a)',
-    MLB: 'linear-gradient(100deg, #002d72, #e31837)',
-    NHL: 'linear-gradient(100deg, #003087, #6d6e71)',
-    Soccer: 'linear-gradient(100deg, #004012, #c8b400)',
-  }
-
-  // Avatar color map — gives each player card a unique color based on sport
-  const avatarColors: Record<string, { bg: string; color: string }> = {
-    NBA: { bg: '#0a1e3a', color: '#5b9ee8' },
-    NFL: { bg: '#1a0808', color: '#e85b5b' },
-    MLB: { bg: '#0a2010', color: '#5bbf7a' },
-    NHL: { bg: '#0a1530', color: '#7aa8e8' },
-    Soccer: { bg: '#1a1a08', color: '#d4c84a' },
-  }
-
   return (
     <div style={{ background: '#0e1015', minHeight: '100vh' }}>
 
-      {/* Hero section */}
+      {/* ── Hero ─────────────────────────────────────────────── */}
       <div style={{
-        padding: '72px 2rem 52px',
-        textAlign: 'center',
+        position: 'relative',
+        minHeight: '580px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
         borderBottom: '1px solid #1e2330',
-        background: '#0e1015',
       }}>
+        {/* Background stadium photo */}
         <div style={{
-          display: 'inline-block',
-          background: 'rgba(232,164,50,0.1)',
-          border: '1px solid rgba(232,164,50,0.25)',
-          color: '#e8a432',
-          fontSize: '10px',
-          fontWeight: '700',
-          letterSpacing: '2px',
-          textTransform: 'uppercase',
-          padding: '4px 14px',
-          borderRadius: '20px',
-          marginBottom: '24px'
-        }}>
-          The Sports Rating Community
-        </div>
+          position: 'absolute',
+          inset: 0,
+          backgroundImage: `url('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=80')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center 35%',
+          filter: 'brightness(0.28)',
+        }} />
+        {/* Bottom fade to page bg */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(to bottom, rgba(14,16,21,0.15) 0%, rgba(14,16,21,0.55) 65%, rgba(14,16,21,1) 100%)',
+        }} />
 
-        <h1 style={{
-          fontSize: 'clamp(3rem, 8vw, 5.5rem)',
-          fontWeight: '800',
-          letterSpacing: '6px',
-          color: '#e8e4dc',
-          lineHeight: 1,
-          marginBottom: '8px',
-          textTransform: 'uppercase'
-        }}>
-          RATE THE
-        </h1>
-        <h1 style={{
-          fontSize: 'clamp(3rem, 8vw, 5.5rem)',
-          fontWeight: '800',
-          letterSpacing: '6px',
-          color: '#e8a432',
-          lineHeight: 1,
-          marginBottom: '24px',
-          textTransform: 'uppercase',
-          fontStyle: 'italic'
-        }}>
-          GAME.
-        </h1>
+        {/* Content */}
+        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '88px 2rem 64px' }}>
 
-        <p style={{
-          color: '#5a6070',
-          fontSize: '16px',
-          maxWidth: '440px',
-          margin: '0 auto 32px',
-          lineHeight: 1.6,
-          fontWeight: '300'
-        }}>
-          Log every game, rate every player, build your all-time list.
-        </p>
-
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-          <a href="/auth" style={{
-            background: '#e8a432',
-            color: '#000',
-            fontSize: '13px',
+          <div style={{
+            display: 'inline-block',
+            background: 'rgba(232,164,50,0.1)',
+            border: '1px solid rgba(232,164,50,0.28)',
+            color: '#e8a432',
+            fontSize: '10px',
             fontWeight: '700',
-            letterSpacing: '1px',
+            letterSpacing: '3px',
             textTransform: 'uppercase',
-            padding: '11px 28px',
-            borderRadius: '4px',
-            textDecoration: 'none'
+            padding: '5px 16px',
+            borderRadius: '20px',
+            marginBottom: '28px',
           }}>
-            Get started
-          </a>
-          <a href="/games" style={{
-            background: 'transparent',
-            color: '#e8e4dc',
-            fontSize: '13px',
-            fontWeight: '500',
-            letterSpacing: '1px',
+            The Sports Rating Community
+          </div>
+
+          <div style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 'clamp(4.5rem, 11vw, 7.5rem)',
+            fontWeight: '900',
+            letterSpacing: '4px',
+            lineHeight: 0.88,
+            marginBottom: '28px',
             textTransform: 'uppercase',
-            padding: '10px 28px',
-            borderRadius: '4px',
-            textDecoration: 'none',
-            border: '1px solid #2a2f3e'
           }}>
-            Browse games
-          </a>
+            <div style={{ color: '#f0ece4' }}>RATE THE</div>
+            <div style={{ color: '#e8a432', fontStyle: 'italic' }}>GAME.</div>
+          </div>
+
+          <p style={{
+            color: 'rgba(200,196,188,0.65)',
+            fontSize: '15px',
+            maxWidth: '400px',
+            margin: '0 auto 36px',
+            lineHeight: 1.65,
+            fontWeight: '300',
+            letterSpacing: '0.2px',
+          }}>
+            Log every game, rate every player, build your all-time list.
+          </p>
+
+          {/* Sport badges */}
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '40px' }}>
+            {[
+              { label: 'NBA', emoji: '🏀' },
+              { label: 'NFL', emoji: '🏈' },
+              { label: 'MLB', emoji: '⚾' },
+              { label: 'NHL', emoji: '🏒' },
+              { label: 'Soccer', emoji: '⚽' },
+            ].map((s) => (
+              <div key={s.label} style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '20px',
+                padding: '4px 14px',
+                fontSize: '11px',
+                color: 'rgba(200,196,188,0.55)',
+                letterSpacing: '1.5px',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+              }}>
+                {s.emoji} {s.label}
+              </div>
+            ))}
+          </div>
+
+          {/* CTAs */}
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <a href="/auth" style={{
+              background: '#e8a432',
+              color: '#000',
+              fontSize: '13px',
+              fontWeight: '700',
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              padding: '13px 34px',
+              borderRadius: '4px',
+              textDecoration: 'none',
+            }}>
+              Get started
+            </a>
+            <a href="/games" style={{
+              background: 'rgba(255,255,255,0.06)',
+              backdropFilter: 'blur(8px)',
+              color: '#e8e4dc',
+              fontSize: '13px',
+              fontWeight: '500',
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              padding: '12px 34px',
+              borderRadius: '4px',
+              textDecoration: 'none',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}>
+              Browse games
+            </a>
+          </div>
         </div>
       </div>
 
-      {/* Stats bar */}
+      {/* ── Stats bar ─────────────────────────────────────────── */}
       <div style={{
         display: 'flex',
         justifyContent: 'center',
-        gap: '4rem',
-        padding: '24px 2rem',
+        gap: '5rem',
+        padding: '22px 2rem',
         background: '#12151c',
-        borderBottom: '1px solid #1e2330'
+        borderBottom: '1px solid #1e2330',
       }}>
         {[
           { num: '48,291', label: 'Games rated' },
           { num: '12,540', label: 'Members' },
-          { num: '3', label: 'Sports' },
+          { num: '5', label: 'Sports' },
         ].map((stat) => (
           <div key={stat.label} style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: '#e8a432', letterSpacing: '1px' }}>
+            <div style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '30px',
+              fontWeight: '700',
+              color: '#e8a432',
+              letterSpacing: '1px',
+            }}>
               {stat.num}
             </div>
-            <div style={{ fontSize: '10px', color: '#3a4055', textTransform: 'uppercase', letterSpacing: '2px', marginTop: '4px' }}>
+            <div style={{ fontSize: '10px', color: '#3a4055', textTransform: 'uppercase', letterSpacing: '2px', marginTop: '2px' }}>
               {stat.label}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Recent games section */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '700', letterSpacing: '3px', textTransform: 'uppercase', color: '#e8e4dc' }}>
+      {/* ── Sport showcase ───────────────────────────────────── */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 2rem 2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.25rem' }}>
+          <h2 style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: '22px',
+            fontWeight: '700',
+            letterSpacing: '3px',
+            textTransform: 'uppercase',
+            color: '#e8e4dc',
+          }}>
+            Browse by Sport
+          </h2>
+          <a href="/games" style={{ fontSize: '12px', color: '#e8a432', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700', textDecoration: 'none' }}>
+            All sports →
+          </a>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '14px',
+        }}>
+          {SPORT_SHOWCASE.map((s) => (
+            <a
+              key={s.sport}
+              href={s.href}
+              style={{
+                position: 'relative',
+                height: '210px',
+                borderRadius: '10px',
+                overflow: 'hidden',
+                display: 'block',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                border: '1px solid #1e2330',
+              }}
+            >
+              {/* Sport photo */}
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundImage: `url('${s.image}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }} />
+              {/* Gradient overlay */}
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                background: s.gradient,
+              }} />
+              {/* Content */}
+              <div style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                padding: '20px',
+                zIndex: 1,
+              }}>
+                <div style={{ fontSize: '26px', marginBottom: '4px' }}>
+                  {sportEmoji[s.sport]}
+                </div>
+                <div style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: '26px',
+                  fontWeight: '900',
+                  color: '#fff',
+                  letterSpacing: '2px',
+                  textTransform: 'uppercase',
+                  lineHeight: 1,
+                }}>
+                  {s.sport}
+                </div>
+                <div style={{
+                  fontSize: '11px',
+                  color: 'rgba(255,255,255,0.45)',
+                  letterSpacing: '1.5px',
+                  textTransform: 'uppercase',
+                  marginTop: '5px',
+                }}>
+                  {s.name}
+                </div>
+              </div>
+              {/* Right accent line */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '3px',
+                height: '100%',
+                background: s.accent,
+                opacity: 0.8,
+              }} />
+            </a>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Recent Games ─────────────────────────────────────── */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem 2rem 3rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.25rem' }}>
+          <h2 style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: '22px',
+            fontWeight: '700',
+            letterSpacing: '3px',
+            textTransform: 'uppercase',
+            color: '#e8e4dc',
+          }}>
             Recent Games
           </h2>
           <a href="/games" style={{ fontSize: '12px', color: '#e8a432', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700', textDecoration: 'none' }}>
@@ -208,61 +383,99 @@ export default function HomePage() {
         {loading ? (
           <p style={{ color: '#3a4055', fontSize: '14px' }}>Loading...</p>
         ) : games.length === 0 ? (
-          // Shown when there are no games in the database yet
           <div style={{
             background: '#151820',
             border: '1px solid #1e2330',
-            borderRadius: '8px',
+            borderRadius: '10px',
             padding: '40px',
-            textAlign: 'center'
+            textAlign: 'center',
           }}>
-            <p style={{ color: '#3a4055', fontSize: '14px', marginBottom: '8px' }}>No games yet.</p>
+            <p style={{ color: '#3a4055', fontSize: '14px', marginBottom: '6px' }}>No games yet.</p>
             <p style={{ color: '#2a2f3e', fontSize: '12px' }}>Add some games in your Supabase table to see them here.</p>
           </div>
         ) : (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-            gap: '1rem'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+            gap: '1rem',
           }}>
             {games.map((game) => (
               <div key={game.id} style={{
                 background: '#151820',
                 border: '1px solid #1e2330',
-                borderRadius: '8px',
+                borderRadius: '10px',
                 overflow: 'hidden',
                 cursor: 'pointer',
               }}>
-                {/* Game banner with team names and score */}
+                {/* Banner: sport photo texture + gradient */}
                 <div style={{
-                  height: '80px',
-                  background: sportColors[game.sport] || 'linear-gradient(100deg, #1a1d26, #2a2f3e)',
+                  height: '104px',
+                  backgroundImage: sportBanners[game.sport] || 'linear-gradient(100deg, #1a1d26, #2a2f3e)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '0 16px'
+                  padding: '0 20px',
+                  position: 'relative',
                 }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '15px', fontWeight: '700', color: '#fff', letterSpacing: '1px' }}>{game.home_team}</div>
-                    <div style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>{game.home_score}</div>
+                  <div style={{
+                    position: 'absolute',
+                    top: '8px',
+                    left: '10px',
+                    fontSize: '9px',
+                    fontWeight: '700',
+                    letterSpacing: '2px',
+                    color: 'rgba(255,255,255,0.4)',
+                    textTransform: 'uppercase',
+                  }}>
+                    {game.sport}
                   </div>
-                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>VS</div>
-                  <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '15px', fontWeight: '700', color: '#fff', letterSpacing: '1px' }}>{game.away_team}</div>
-                    <div style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>{game.away_score}</div>
+                  <div style={{ textAlign: 'center', zIndex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff', letterSpacing: '0.5px', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+                      {game.home_team}
+                    </div>
+                    <div style={{
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontSize: '30px',
+                      fontWeight: '800',
+                      color: '#fff',
+                      lineHeight: 1,
+                      textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+                    }}>
+                      {game.home_score}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '700', letterSpacing: '2px' }}>
+                    FINAL
+                  </div>
+                  <div style={{ textAlign: 'center', zIndex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff', letterSpacing: '0.5px', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+                      {game.away_team}
+                    </div>
+                    <div style={{
+                      fontFamily: "'Barlow Condensed', sans-serif",
+                      fontSize: '30px',
+                      fontWeight: '800',
+                      color: '#fff',
+                      lineHeight: 1,
+                      textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+                    }}>
+                      {game.away_score}
+                    </div>
                   </div>
                 </div>
 
-                {/* Game info */}
-                <div style={{ padding: '12px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#c8c4bc' }}>
+                {/* Info */}
+                <div style={{ padding: '13px 14px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#c8c4bc', marginBottom: '3px' }}>
                     {game.home_team} vs {game.away_team}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#3a4055', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '3px' }}>
+                  <div style={{ fontSize: '11px', color: '#3a4055', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                     {sportEmoji[game.sport]} {game.sport} · {new Date(game.game_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </div>
                   {game.notable && (
-                    <div style={{ fontSize: '11px', color: '#e8a432', marginTop: '4px', fontStyle: 'italic' }}>
+                    <div style={{ fontSize: '11px', color: '#e8a432', marginTop: '5px', fontStyle: 'italic' }}>
                       {game.notable}
                     </div>
                   )}
@@ -273,10 +486,17 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Top players section */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem 4rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: '700', letterSpacing: '3px', textTransform: 'uppercase', color: '#e8e4dc' }}>
+      {/* ── Top Players ──────────────────────────────────────── */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem 5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.25rem' }}>
+          <h2 style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: '22px',
+            fontWeight: '700',
+            letterSpacing: '3px',
+            textTransform: 'uppercase',
+            color: '#e8e4dc',
+          }}>
             Top Rated Players
           </h2>
           <a href="/players" style={{ fontSize: '12px', color: '#e8a432', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '700', textDecoration: 'none' }}>
@@ -290,52 +510,86 @@ export default function HomePage() {
           <div style={{
             background: '#151820',
             border: '1px solid #1e2330',
-            borderRadius: '8px',
+            borderRadius: '10px',
             padding: '40px',
-            textAlign: 'center'
+            textAlign: 'center',
           }}>
-            <p style={{ color: '#3a4055', fontSize: '14px', marginBottom: '8px' }}>No players yet.</p>
+            <p style={{ color: '#3a4055', fontSize: '14px', marginBottom: '6px' }}>No players yet.</p>
             <p style={{ color: '#2a2f3e', fontSize: '12px' }}>Add some players in your Supabase table to see them here.</p>
           </div>
         ) : (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-            gap: '1rem'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(175px, 1fr))',
+            gap: '1rem',
           }}>
             {players.map((player) => {
-              const avatarColor = avatarColors[player.sport] || { bg: '#1a1d26', color: '#7a8099' }
+              const ac = avatarColors[player.sport] || { bg: '#1a1d26', color: '#7a8099', border: '#2a2f3e' }
               const initials = player.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)
 
               return (
                 <div key={player.id} style={{
                   background: '#151820',
-                  border: '1px solid #1e2330',
-                  borderRadius: '8px',
-                  padding: '1rem',
+                  border: `1px solid ${ac.border}`,
+                  borderRadius: '10px',
+                  padding: '20px 14px',
                   textAlign: 'center',
                   cursor: 'pointer',
+                  position: 'relative',
+                  overflow: 'hidden',
                 }}>
-                  {/* Avatar circle with player initials */}
+                  {/* Top accent bar */}
                   <div style={{
-                    width: '48px',
-                    height: '48px',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '3px',
+                    background: ac.color,
+                    opacity: 0.5,
+                  }} />
+
+                  {/* Avatar */}
+                  <div style={{
+                    width: '56px',
+                    height: '56px',
                     borderRadius: '50%',
-                    background: avatarColor.bg,
-                    color: avatarColor.color,
+                    background: ac.bg,
+                    color: ac.color,
+                    border: `2px solid ${ac.border}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '16px',
-                    fontWeight: '700',
-                    margin: '0 auto 10px',
-                    letterSpacing: '1px'
+                    fontSize: '18px',
+                    fontWeight: '800',
+                    margin: '0 auto 12px',
+                    letterSpacing: '1px',
+                    fontFamily: "'Barlow Condensed', sans-serif",
                   }}>
                     {initials}
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#c8c4bc' }}>{player.name}</div>
-                  <div style={{ fontSize: '10px', color: '#3a4055', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '3px' }}>
-                    {player.position} · {player.sport}
+
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#e8e4dc', marginBottom: '3px' }}>
+                    {player.name}
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#5a6070', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                    {player.position}
+                  </div>
+
+                  {/* Sport badge */}
+                  <div style={{
+                    display: 'inline-block',
+                    background: ac.bg,
+                    color: ac.color,
+                    fontSize: '9px',
+                    fontWeight: '700',
+                    letterSpacing: '1.5px',
+                    textTransform: 'uppercase',
+                    padding: '3px 10px',
+                    borderRadius: '20px',
+                    border: `1px solid ${ac.border}`,
+                  }}>
+                    {sportEmoji[player.sport]} {player.sport}
                   </div>
                 </div>
               )

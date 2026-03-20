@@ -53,34 +53,57 @@ export default function AuthPage() {
   }
 
   return (
-    // Full screen dark background that centers the card
+    // Full screen with sports background
     <div style={{
       minHeight: '100vh',
-      background: '#0e1015',
+      position: 'relative',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontFamily: 'sans-serif',
-      padding: '40px 16px'
+      padding: '40px 16px',
     }}>
+      {/* Sports background */}
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundImage: `url('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1600&q=80')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        filter: 'brightness(0.2)',
+        zIndex: 0,
+      }} />
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'linear-gradient(135deg, rgba(14,16,21,0.85) 0%, rgba(14,16,21,0.95) 100%)',
+        zIndex: 0,
+      }} />
+
       {/* The login/signup card */}
       <div style={{
-        background: '#151820',
+        position: 'relative',
+        zIndex: 1,
+        background: 'rgba(21,24,32,0.92)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
         border: '1px solid #1e2330',
-        borderRadius: '10px',
+        borderRadius: '12px',
         padding: '40px',
         width: '100%',
-        maxWidth: '420px'
+        maxWidth: '420px',
       }}>
 
         {/* Logo, slogan, and sport icons */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
         <h1 style={{
             color: '#e8a432',
-            fontSize: '28px',
-            fontWeight: '700',
+            fontSize: '32px',
+            fontWeight: '900',
             letterSpacing: '4px',
-            marginBottom: '6px'
+            marginBottom: '6px',
+            fontFamily: "'Barlow Condensed', sans-serif",
+            textTransform: 'uppercase',
+            fontStyle: 'italic',
         }}>
             SPORTBOXD
         </h1>
