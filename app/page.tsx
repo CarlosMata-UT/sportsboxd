@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { getTeamColors } from '@/lib/teamColors'
 
 type Game = {
   id: string
@@ -30,14 +31,6 @@ const sportEmoji: Record<string, string> = {
   Soccer: '⚽',
 }
 
-// Gradient over sport photo for game card banners
-const sportBanners: Record<string, string> = {
-  NBA: `linear-gradient(100deg, rgba(26,58,108,0.93), rgba(201,8,42,0.88)), url('https://images.unsplash.com/photo-1546519638405-a9d1b16a5b24?auto=format&fit=crop&w=800&q=80')`,
-  NFL: `linear-gradient(100deg, rgba(1,51,105,0.93), rgba(213,10,10,0.88)), url('https://images.unsplash.com/photo-1560272564-c83b66b1ad12?auto=format&fit=crop&w=800&q=80')`,
-  MLB: `linear-gradient(100deg, rgba(0,45,114,0.93), rgba(227,24,55,0.88)), url('https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?auto=format&fit=crop&w=800&q=80')`,
-  NHL: `linear-gradient(100deg, rgba(0,48,135,0.93), rgba(109,110,113,0.88)), url('https://images.unsplash.com/photo-1515703407324-5f753afd8be8?auto=format&fit=crop&w=800&q=80')`,
-  Soccer: `linear-gradient(100deg, rgba(0,64,18,0.93), rgba(200,180,0,0.88)), url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80')`,
-}
 
 const avatarColors: Record<string, { bg: string; color: string; border: string }> = {
   NBA: { bg: '#0a1e3a', color: '#5b9ee8', border: '#1a3a6c' },
@@ -399,7 +392,10 @@ export default function HomePage() {
             gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
             gap: '1rem',
           }}>
-            {games.map((game) => (
+            {games.map((game) => {
+              const homeColors = getTeamColors(game.home_team, game.sport)
+              const awayColors = getTeamColors(game.away_team, game.sport)
+              return (
               <div key={game.id} style={{
                 background: '#151820',
                 border: '1px solid #1e2330',
@@ -407,12 +403,10 @@ export default function HomePage() {
                 overflow: 'hidden',
                 cursor: 'pointer',
               }}>
-                {/* Banner: sport photo texture + gradient */}
+                {/* Banner: team colors gradient */}
                 <div style={{
                   height: '104px',
-                  backgroundImage: sportBanners[game.sport] || 'linear-gradient(100deg, #1a1d26, #2a2f3e)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
+                  background: `linear-gradient(100deg, ${homeColors.primary}ee 0%, ${homeColors.primary}99 45%, ${awayColors.primary}99 55%, ${awayColors.primary}ee 100%)`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -481,7 +475,8 @@ export default function HomePage() {
                   )}
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

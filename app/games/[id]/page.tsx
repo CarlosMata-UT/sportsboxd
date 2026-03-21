@@ -101,8 +101,9 @@ function BoxScoreSection({ game }: { game: Game }) {
   const summary = data.summary
   const boxscore = summary.boxscore
   const teams: any[] = boxscore?.teams || []
+  const playerGroups: any[] = boxscore?.players || []
   const hasTeamStats = teams.length > 0 && teams[0]?.statistics?.length > 0
-  const hasPlayerStats = teams.length > 0 && teams[0]?.athletes?.length > 0
+  const hasPlayerStats = playerGroups.length > 0 && playerGroups[0]?.statistics?.length > 0
 
   const tabStyle = (active: boolean) => ({
     padding: '8px 18px', fontSize: '11px', fontWeight: '700', letterSpacing: '1px',
@@ -183,42 +184,54 @@ function BoxScoreSection({ game }: { game: Game }) {
             </div>
           )}
 
-          {/* Player Stats tab */}
+          {/* Player Stats tab — ESPN boxscore.players structure */}
           {activeTab === 'players' && hasPlayerStats && (
             <div>
-              {teams.map((team: any, ti: number) => (
-                <div key={ti} style={{ marginBottom: '24px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: '700', color: '#e8a432', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px', paddingBottom: '6px', borderBottom: '1px solid #1e2330' }}>
-                    {team.team?.displayName}
-                  </div>
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                      <thead>
-                        <tr style={{ background: '#1a1d26' }}>
-                          <th style={{ textAlign: 'left', padding: '8px 10px', color: '#3a4055', fontSize: '10px', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', whiteSpace: 'nowrap', position: 'sticky', left: 0, background: '#1a1d26' }}>Player</th>
-                          {(team.athletes?.find((a: any) => a.statistics?.names)?.statistics?.names || []).map((name: string, ni: number) => (
-                            <th key={ni} style={{ textAlign: 'center', padding: '8px 8px', color: '#3a4055', fontSize: '10px', fontWeight: '700', letterSpacing: '0.5px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{name}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(team.athletes || []).filter((a: any) => a.statistics?.values?.length).map((athlete: any, ai: number) => (
-                          <tr key={ai} style={{ borderBottom: '1px solid #1e2330', background: ai % 2 === 0 ? 'transparent' : 'rgba(26,29,38,0.4)' }}>
-                            <td style={{ padding: '9px 10px', color: '#c8c4bc', fontWeight: '600', whiteSpace: 'nowrap', position: 'sticky', left: 0, background: ai % 2 === 0 ? '#151820' : '#171a24' }}>
-                              {athlete.athlete?.displayName || athlete.athlete?.shortName || 'Unknown'}
-                              {athlete.starter && <span style={{ marginLeft: '5px', fontSize: '9px', color: '#e8a432', fontWeight: '700' }}>•</span>}
-                            </td>
-                            {(athlete.statistics?.values || []).map((val: string, vi: number) => (
-                              <td key={vi} style={{ textAlign: 'center', padding: '9px 8px', color: '#7a8099', whiteSpace: 'nowrap' }}>{val || '—'}</td>
+              {playerGroups.map((group: any, gi: number) => {
+                // Each group has team info and a statistics array
+                // statistics[0] has names[] (column headers) and athletes[] (rows)
+                const statGroup = group.statistics?.[0]
+                if (!statGroup) return null
+                const colNames: string[] = statGroup.names || []
+                const athletes: any[] = statGroup.athletes || []
+                return (
+                  <div key={gi} style={{ marginBottom: '28px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: '700', color: '#e8a432', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '10px', paddingBottom: '6px', borderBottom: '1px solid #1e2330' }}>
+                      {group.team?.displayName}
+                    </div>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                        <thead>
+                          <tr style={{ background: '#1a1d26' }}>
+                            <th style={{ textAlign: 'left', padding: '8px 10px', color: '#3a4055', fontSize: '10px', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Player</th>
+                            {colNames.map((name: string, ni: number) => (
+                              <th key={ni} style={{ textAlign: 'center', padding: '8px 8px', color: '#3a4055', fontSize: '10px', fontWeight: '700', letterSpacing: '0.5px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{name}</th>
                             ))}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {athletes.filter((a: any) => a.stats?.length || a.statistics?.length).map((athlete: any, ai: number) => {
+                            const vals: string[] = athlete.stats || athlete.statistics || []
+                            const isStarter = athlete.starter
+                            return (
+                              <tr key={ai} style={{ borderBottom: '1px solid #1e2330', background: ai % 2 === 0 ? 'transparent' : 'rgba(26,29,38,0.3)' }}>
+                                <td style={{ padding: '9px 10px', color: '#c8c4bc', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                  {athlete.athlete?.displayName || athlete.athlete?.shortName || 'Unknown'}
+                                  {isStarter && <span style={{ marginLeft: '5px', fontSize: '9px', color: '#e8a432', fontWeight: '700' }}>•</span>}
+                                </td>
+                                {vals.map((val: string, vi: number) => (
+                                  <td key={vi} style={{ textAlign: 'center', padding: '9px 8px', color: '#7a8099', whiteSpace: 'nowrap' }}>{val || '—'}</td>
+                                ))}
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div style={{ marginTop: '6px', fontSize: '10px', color: '#2a2f3e' }}>• Starter</div>
                   </div>
-                  <div style={{ marginTop: '6px', fontSize: '10px', color: '#2a2f3e' }}>• Starter</div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
