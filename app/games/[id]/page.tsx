@@ -59,9 +59,17 @@ function TeamLogo({ team, sport, size = 100 }: { team: string; sport: string; si
 // ── Game Highlights ──────────────────────────────────────────────────────────
 
 function GameHighlightsSection({ game }: { game: Game }) {
-  const dateStr = new Date(game.game_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-  const query = encodeURIComponent(`${game.home_team} vs ${game.away_team} highlights ${dateStr} NBA`)
-  const ytUrl = `https://www.youtube.com/results?search_query=${query}`
+  const [videoId, setVideoId] = useState<string | null>(null)
+  const [hlLoading, setHlLoading] = useState(true)
+
+  useEffect(() => {
+    const params = new URLSearchParams({ home: game.home_team, away: game.away_team, sport: game.sport })
+    fetch(`/api/highlights?${params}`)
+      .then(r => r.json())
+      .then(json => { setVideoId(json.videoId || null); setHlLoading(false) })
+      .catch(() => setHlLoading(false))
+  }, [game])
+
   const homeColors = getTeamColors(game.home_team, game.sport)
   const awayColors = getTeamColors(game.away_team, game.sport)
 
@@ -73,52 +81,46 @@ function GameHighlightsSection({ game }: { game: Game }) {
         <span style={{ fontSize: '10px', color: '#2a2f3e', marginLeft: 'auto' }}>YouTube</span>
       </div>
 
-      <a
-        href={ytUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ display: 'block', textDecoration: 'none', position: 'relative' }}
-      >
-        {/* Faux thumbnail with team color split */}
+      {hlLoading ? (
         <div style={{
           aspectRatio: '16/9',
-          background: `linear-gradient(135deg, ${homeColors.primary}cc 0%, #0e1015 50%, ${awayColors.primary}cc 100%)`,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          gap: '16px', position: 'relative',
+          background: `linear-gradient(135deg, ${homeColors.primary}66 0%, #0e1015 50%, ${awayColors.primary}66 100%)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          {/* Team name watermark */}
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '0 32px', pointerEvents: 'none',
-          }}>
-            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: '900', color: 'rgba(255,255,255,0.12)', textTransform: 'uppercase', letterSpacing: '3px' }}>
-              {game.home_team.split(' ').slice(-1)[0]}
-            </span>
-            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: '900', color: 'rgba(255,255,255,0.12)', textTransform: 'uppercase', letterSpacing: '3px' }}>
-              {game.away_team.split(' ').slice(-1)[0]}
-            </span>
-          </div>
-
-          {/* Play button */}
-          <div style={{
-            width: '64px', height: '64px', background: '#ff0000', borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 24px rgba(255,0,0,0.5)', flexShrink: 0,
-            transition: 'transform 0.15s',
-          }}>
-            <div style={{ width: 0, height: 0, borderStyle: 'solid', borderWidth: '12px 0 12px 22px', borderColor: 'transparent transparent transparent #fff', marginLeft: '5px' }} />
-          </div>
-
-          <div style={{ textAlign: 'center', zIndex: 1 }}>
-            <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
-              Watch Highlights
-            </div>
-            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.5px' }}>
-              {game.home_team} vs {game.away_team} · Opens YouTube
-            </div>
-          </div>
+          <span style={{ color: '#3a4055', fontSize: '13px' }}>Loading highlights...</span>
         </div>
-      </a>
+      ) : videoId ? (
+        <div style={{ position: 'relative', aspectRatio: '16/9' }}>
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      ) : (
+        /* Fallback: no video found — show search link */
+        <a
+          href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${game.home_team} vs ${game.away_team} highlights ${game.sport}`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: 'block', textDecoration: 'none' }}
+        >
+          <div style={{
+            aspectRatio: '16/9',
+            background: `linear-gradient(135deg, ${homeColors.primary}88 0%, #0e1015 50%, ${awayColors.primary}88 100%)`,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '14px',
+          }}>
+            <div style={{ width: '56px', height: '56px', background: '#ff0000', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(255,0,0,0.4)' }}>
+              <div style={{ width: 0, height: 0, borderStyle: 'solid', borderWidth: '10px 0 10px 20px', borderColor: 'transparent transparent transparent #fff', marginLeft: '4px' }} />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '13px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>Search Highlights on YouTube</div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{game.home_team} vs {game.away_team}</div>
+            </div>
+          </div>
+        </a>
+      )}
     </div>
   )
 }
