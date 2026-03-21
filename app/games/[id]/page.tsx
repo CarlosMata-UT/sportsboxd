@@ -56,34 +56,79 @@ function TeamLogo({ team, sport, size = 100 }: { team: string; sport: string; si
   )
 }
 
-// ── Box score components ─────────────────────────────────────────────────────
+// ── Game Highlights ──────────────────────────────────────────────────────────
 
-function BoxScoreSection({ game }: { game: Game }) {
-  const [data, setData] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+function GameHighlightsSection({ game }: { game: Game }) {
+  const dateStr = new Date(game.game_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  const query = encodeURIComponent(`${game.home_team} vs ${game.away_team} highlights ${dateStr} NBA`)
+  const ytUrl = `https://www.youtube.com/results?search_query=${query}`
+  const homeColors = getTeamColors(game.home_team, game.sport)
+  const awayColors = getTeamColors(game.away_team, game.sport)
+
+  return (
+    <div style={{ background: '#151820', border: '1px solid #1e2330', borderRadius: '10px', marginBottom: '20px', overflow: 'hidden' }}>
+      <div style={{ padding: '14px 20px', borderBottom: '1px solid #1e2330', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ width: '8px', height: '8px', background: '#ff0000', borderRadius: '2px', flexShrink: 0 }} />
+        <span style={{ fontSize: '11px', color: '#3a4055', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase' }}>Game Highlights</span>
+        <span style={{ fontSize: '10px', color: '#2a2f3e', marginLeft: 'auto' }}>YouTube</span>
+      </div>
+
+      <a
+        href={ytUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ display: 'block', textDecoration: 'none', position: 'relative' }}
+      >
+        {/* Faux thumbnail with team color split */}
+        <div style={{
+          aspectRatio: '16/9',
+          background: `linear-gradient(135deg, ${homeColors.primary}cc 0%, #0e1015 50%, ${awayColors.primary}cc 100%)`,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: '16px', position: 'relative',
+        }}>
+          {/* Team name watermark */}
+          <div style={{
+            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '0 32px', pointerEvents: 'none',
+          }}>
+            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: '900', color: 'rgba(255,255,255,0.12)', textTransform: 'uppercase', letterSpacing: '3px' }}>
+              {game.home_team.split(' ').slice(-1)[0]}
+            </span>
+            <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: '900', color: 'rgba(255,255,255,0.12)', textTransform: 'uppercase', letterSpacing: '3px' }}>
+              {game.away_team.split(' ').slice(-1)[0]}
+            </span>
+          </div>
+
+          {/* Play button */}
+          <div style={{
+            width: '64px', height: '64px', background: '#ff0000', borderRadius: '50%',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 24px rgba(255,0,0,0.5)', flexShrink: 0,
+            transition: 'transform 0.15s',
+          }}>
+            <div style={{ width: 0, height: 0, borderStyle: 'solid', borderWidth: '12px 0 12px 22px', borderColor: 'transparent transparent transparent #fff', marginLeft: '5px' }} />
+          </div>
+
+          <div style={{ textAlign: 'center', zIndex: 1 }}>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
+              Watch Highlights
+            </div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.5px' }}>
+              {game.home_team} vs {game.away_team} · Opens YouTube
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  )
+}
+
+// ── Box score component ──────────────────────────────────────────────────────
+
+function BoxScoreSection({ data, loading, error, game }: {
+  data: any; loading: boolean; error: string; game: Game
+}) {
   const [activeTab, setActiveTab] = useState<'team' | 'players'>('team')
-
-  useEffect(() => {
-    const fetchBoxScore = async () => {
-      try {
-        const params = new URLSearchParams({
-          date: game.game_date,
-          home: game.home_team,
-          away: game.away_team,
-          sport: game.sport,
-        })
-        const res = await fetch(`/api/boxscore?${params}`)
-        const json = await res.json()
-        if (json.error) { setError(json.error); setLoading(false); return }
-        setData(json)
-      } catch {
-        setError('Could not load box score.')
-      }
-      setLoading(false)
-    }
-    fetchBoxScore()
-  }, [game])
 
   if (loading) return (
     <div style={{ padding: '24px', color: '#3a4055', fontSize: '13px' }}>Loading box score...</div>
@@ -115,7 +160,7 @@ function BoxScoreSection({ game }: { game: Game }) {
 
   return (
     <div>
-      {/* Line score (quarter by quarter) — always visible */}
+      {/* Line score — always visible */}
       {teams.length > 0 && teams[0]?.linescores?.length > 0 && (
         <div style={{ marginBottom: '20px', overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
@@ -124,7 +169,7 @@ function BoxScoreSection({ game }: { game: Game }) {
                 <th style={{ textAlign: 'left', padding: '8px 12px', color: '#3a4055', fontWeight: '700', fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase' }}>Team</th>
                 {(teams[0]?.linescores || []).map((_: any, i: number) => (
                   <th key={i} style={{ textAlign: 'center', padding: '8px 10px', color: '#3a4055', fontWeight: '700', fontSize: '10px', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                    {game.sport === 'NBA' || game.sport === 'NHL' ? `Q${i + 1}` : game.sport === 'NFL' ? `Q${i + 1}` : `${i + 1}`}
+                    {game.sport === 'NBA' || game.sport === 'NHL' ? `Q${i + 1}` : `${i + 1}`}
                   </th>
                 ))}
                 <th style={{ textAlign: 'center', padding: '8px 10px', color: '#e8a432', fontWeight: '900', fontSize: '12px' }}>Final</th>
@@ -165,7 +210,6 @@ function BoxScoreSection({ game }: { game: Game }) {
             )}
           </div>
 
-          {/* Team Stats tab */}
           {activeTab === 'team' && hasTeamStats && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               {teams.map((team: any, ti: number) => (
@@ -184,12 +228,9 @@ function BoxScoreSection({ game }: { game: Game }) {
             </div>
           )}
 
-          {/* Player Stats tab — ESPN boxscore.players structure */}
           {activeTab === 'players' && hasPlayerStats && (
             <div>
               {playerGroups.map((group: any, gi: number) => {
-                // Each group has team info and a statistics array
-                // statistics[0] has names[] (column headers) and athletes[] (rows)
                 const statGroup = group.statistics?.[0]
                 if (!statGroup) return null
                 const colNames: string[] = statGroup.names || []
@@ -212,12 +253,11 @@ function BoxScoreSection({ game }: { game: Game }) {
                         <tbody>
                           {athletes.filter((a: any) => a.stats?.length || a.statistics?.length).map((athlete: any, ai: number) => {
                             const vals: string[] = athlete.stats || athlete.statistics || []
-                            const isStarter = athlete.starter
                             return (
                               <tr key={ai} style={{ borderBottom: '1px solid #1e2330', background: ai % 2 === 0 ? 'transparent' : 'rgba(26,29,38,0.3)' }}>
                                 <td style={{ padding: '9px 10px', color: '#c8c4bc', fontWeight: '600', whiteSpace: 'nowrap' }}>
                                   {athlete.athlete?.displayName || athlete.athlete?.shortName || 'Unknown'}
-                                  {isStarter && <span style={{ marginLeft: '5px', fontSize: '9px', color: '#e8a432', fontWeight: '700' }}>•</span>}
+                                  {athlete.starter && <span style={{ marginLeft: '5px', fontSize: '9px', color: '#e8a432', fontWeight: '700' }}>•</span>}
                                 </td>
                                 {vals.map((val: string, vi: number) => (
                                   <td key={vi} style={{ textAlign: 'center', padding: '9px 8px', color: '#7a8099', whiteSpace: 'nowrap' }}>{val || '—'}</td>
@@ -253,6 +293,10 @@ export default function GameDetailPage() {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
 
+  const [bsData, setBsData] = useState<any>(null)
+  const [bsLoading, setBsLoading] = useState(false)
+  const [bsError, setBsError] = useState('')
+
   useEffect(() => {
     const fetchGame = async () => {
       const [{ data: gameData }, { data: ratingData }] = await Promise.all([
@@ -270,6 +314,26 @@ export default function GameDetailPage() {
     }
     fetchGame()
   }, [id])
+
+  // Fetch boxscore once we have game data
+  useEffect(() => {
+    if (!game) return
+    setBsLoading(true)
+    const params = new URLSearchParams({
+      date: game.game_date,
+      home: game.home_team,
+      away: game.away_team,
+      sport: game.sport,
+    })
+    fetch(`/api/boxscore?${params}`)
+      .then(r => r.json())
+      .then(json => {
+        if (json.error) { setBsError(json.error); setBsLoading(false); return }
+        setBsData(json)
+        setBsLoading(false)
+      })
+      .catch(() => { setBsError('Could not load box score.'); setBsLoading(false) })
+  }, [game])
 
   if (loading) return (
     <div style={{ background: '#0e1015', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -289,6 +353,21 @@ export default function GameDetailPage() {
   const formattedDate = new Date(game.game_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
   const renderStars = (avg: number) => '★'.repeat(Math.round(avg)) + '☆'.repeat(5 - Math.round(avg))
 
+  // Extract attendance from ESPN data
+  const attendance: number | null =
+    bsData?.summary?.gameInfo?.attendance ||
+    bsData?.summary?.header?.competitions?.[0]?.attendance ||
+    null
+
+  const gameInfoRows = [
+    { label: 'Date', value: formattedDate },
+    { label: 'Sport', value: `${sportEmoji[game.sport]} ${game.sport}` },
+    { label: 'Season', value: game.season || '—' },
+    { label: 'Result', value: winner === 'tie' ? 'Tie' : `${winner === 'home' ? game.home_team : game.away_team} Win` },
+    { label: 'Margin', value: `${Math.abs(game.home_score - game.away_score)} pts` },
+    ...(attendance ? [{ label: 'Attendance', value: attendance.toLocaleString() }] : []),
+  ]
+
   return (
     <div style={{ background: '#0e1015', minHeight: '100vh' }}>
 
@@ -303,57 +382,26 @@ export default function GameDetailPage() {
 
       {/* ── Hero scoreboard with team colors ────────────────── */}
       <div style={{ position: 'relative', overflow: 'hidden', marginTop: '20px', borderTop: '1px solid #1e2330', borderBottom: '1px solid #1e2330', minHeight: '280px' }}>
-
-        {/* Home team color — left half */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: homeColors.primary,
-          clipPath: 'polygon(0 0, 52% 0, 48% 100%, 0 100%)',
-          opacity: 0.85,
-        }} />
-        {/* Away team color — right half */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: awayColors.primary,
-          clipPath: 'polygon(52% 0, 100% 0, 100% 100%, 48% 100%)',
-          opacity: 0.85,
-        }} />
-        {/* Dark overlay for readability */}
+        <div style={{ position: 'absolute', inset: 0, background: homeColors.primary, clipPath: 'polygon(0 0, 52% 0, 48% 100%, 0 100%)', opacity: 0.85 }} />
+        <div style={{ position: 'absolute', inset: 0, background: awayColors.primary, clipPath: 'polygon(52% 0, 100% 0, 100% 100%, 48% 100%)', opacity: 0.85 }} />
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,16,21,0.45)' }} />
-        {/* Bottom fade */}
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '80px', background: 'linear-gradient(to bottom, transparent, #0e1015)' }} />
 
-        {/* Sport badge */}
         <div style={{ position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)', zIndex: 2 }}>
           <div style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '4px 16px', fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
             {sportEmoji[game.sport]} {game.sport} · {game.season || formattedDate.split(', ').slice(-1)[0]}
           </div>
         </div>
 
-        <div style={{
-          position: 'relative', zIndex: 1,
-          maxWidth: '1100px', margin: '0 auto',
-          padding: '56px 2rem 40px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0',
-        }}>
-
-          {/* Home team */}
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '1100px', margin: '0 auto', padding: '56px 2rem 40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
             <TeamLogo team={game.home_team} sport={game.sport} size={96} />
-            <div style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: '20px', fontWeight: '900', letterSpacing: '3px',
-              color: winner === 'home' ? '#fff' : 'rgba(255,255,255,0.5)',
-              textTransform: 'uppercase', textAlign: 'center',
-            }}>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: '900', letterSpacing: '3px', color: winner === 'home' ? '#fff' : 'rgba(255,255,255,0.5)', textTransform: 'uppercase', textAlign: 'center' }}>
               {game.home_team}
             </div>
-            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '700' }}>
-              Home
-            </div>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '700' }}>Home</div>
           </div>
 
-          {/* Score */}
           <div style={{ textAlign: 'center', padding: '0 36px', flexShrink: 0 }}>
             <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '3px', fontWeight: '700', marginBottom: '10px' }}>Final</div>
             <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '84px', fontWeight: '900', lineHeight: 1, color: '#fff', letterSpacing: '-2px', textShadow: '0 4px 24px rgba(0,0,0,0.6)' }}>
@@ -368,20 +416,12 @@ export default function GameDetailPage() {
             )}
           </div>
 
-          {/* Away team */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
             <TeamLogo team={game.away_team} sport={game.sport} size={96} />
-            <div style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: '20px', fontWeight: '900', letterSpacing: '3px',
-              color: winner === 'away' ? '#fff' : 'rgba(255,255,255,0.5)',
-              textTransform: 'uppercase', textAlign: 'center',
-            }}>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '20px', fontWeight: '900', letterSpacing: '3px', color: winner === 'away' ? '#fff' : 'rgba(255,255,255,0.5)', textTransform: 'uppercase', textAlign: 'center' }}>
               {game.away_team}
             </div>
-            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '700' }}>
-              Away
-            </div>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: '700' }}>Away</div>
           </div>
         </div>
       </div>
@@ -389,7 +429,7 @@ export default function GameDetailPage() {
       {/* ── Main content ─────────────────────────────────────── */}
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '2rem', display: 'grid', gridTemplateColumns: '1fr 320px', gap: '2rem' }}>
 
-        {/* Left */}
+        {/* ── Left column ── */}
         <div>
 
           {/* Notable */}
@@ -400,34 +440,17 @@ export default function GameDetailPage() {
             </div>
           )}
 
-          {/* Game info */}
-          <div style={{ background: '#151820', border: '1px solid #1e2330', borderRadius: '10px', padding: '24px', marginBottom: '20px' }}>
-            <div style={{ fontSize: '11px', color: '#3a4055', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '20px' }}>Game Information</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
-              {[
-                { label: 'Date', value: formattedDate },
-                { label: 'Sport', value: `${sportEmoji[game.sport]} ${game.sport}` },
-                { label: 'Season', value: game.season || '—' },
-                { label: 'Matchup', value: `${game.home_team} vs ${game.away_team}` },
-                { label: 'Home Score', value: String(game.home_score) },
-                { label: 'Away Score', value: String(game.away_score) },
-                { label: 'Result', value: winner === 'tie' ? 'Tie' : `${winner === 'home' ? game.home_team : game.away_team} Win` },
-                { label: 'Margin', value: `${Math.abs(game.home_score - game.away_score)} pts` },
-              ].map(({ label, value }) => (
-                <div key={label}>
-                  <div style={{ fontSize: '10px', color: '#3a4055', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '4px' }}>{label}</div>
-                  <div style={{ fontSize: '14px', color: '#c8c4bc', fontWeight: '600' }}>{value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Highlights */}
+          <GameHighlightsSection game={game} />
 
           {/* Box Score */}
           <div style={{ background: '#151820', border: '1px solid #1e2330', borderRadius: '10px', marginBottom: '20px', overflow: 'hidden' }}>
             <div style={{ padding: '16px 24px', borderBottom: '1px solid #1e2330' }}>
               <div style={{ fontSize: '11px', color: '#3a4055', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase' }}>Box Score</div>
             </div>
-            <BoxScoreSection game={game} />
+            <div style={{ padding: '16px 20px' }}>
+              <BoxScoreSection data={bsData} loading={bsLoading} error={bsError} game={game} />
+            </div>
           </div>
 
           {/* Team color badges */}
@@ -463,8 +486,9 @@ export default function GameDetailPage() {
           )}
         </div>
 
-        {/* Right sidebar */}
+        {/* ── Right sidebar ── */}
         <div>
+
           {/* Community rating */}
           <div style={{ background: '#151820', border: '1px solid #1e2330', borderRadius: '10px', padding: '24px', marginBottom: '16px', textAlign: 'center' }}>
             <div style={{ fontSize: '10px', color: '#3a4055', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '16px' }}>Community Rating</div>
@@ -493,7 +517,7 @@ export default function GameDetailPage() {
           </button>
 
           {/* Scoreline */}
-          <div style={{ background: '#151820', border: '1px solid #1e2330', borderRadius: '10px', padding: '20px' }}>
+          <div style={{ background: '#151820', border: '1px solid #1e2330', borderRadius: '10px', padding: '20px', marginBottom: '16px' }}>
             <div style={{ fontSize: '10px', color: '#3a4055', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '14px' }}>Scoreline</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
               <div style={{ textAlign: 'center', flex: 1 }}>
@@ -513,6 +537,19 @@ export default function GameDetailPage() {
                   {game.away_score}
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Game Information — moved here from left column */}
+          <div style={{ background: '#151820', border: '1px solid #1e2330', borderRadius: '10px', padding: '20px' }}>
+            <div style={{ fontSize: '10px', color: '#3a4055', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '16px' }}>Game Information</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {gameInfoRows.map(({ label, value }) => (
+                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', borderBottom: '1px solid #1e2330', paddingBottom: '10px' }}>
+                  <span style={{ fontSize: '10px', color: '#3a4055', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase', flexShrink: 0 }}>{label}</span>
+                  <span style={{ fontSize: '12px', color: '#c8c4bc', fontWeight: '600', textAlign: 'right' }}>{value}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
