@@ -8,23 +8,23 @@ const NBA_ABBR: Record<string, string> = {
   'Golden State Warriors': 'gsw', 'Houston Rockets': 'hou', 'Indiana Pacers': 'ind',
   'LA Clippers': 'lac', 'Los Angeles Clippers': 'lac', 'Los Angeles Lakers': 'lal',
   'Memphis Grizzlies': 'mem', 'Miami Heat': 'mia', 'Milwaukee Bucks': 'mil',
-  'Minnesota Timberwolves': 'min', 'New Orleans Pelicans': 'nop', 'New York Knicks': 'nyk',
+  'Minnesota Timberwolves': 'min', 'New Orleans Pelicans': 'no', 'New York Knicks': 'nyk',
   'Oklahoma City Thunder': 'okc', 'Orlando Magic': 'orl', 'Philadelphia 76ers': 'phi',
   'Phoenix Suns': 'phx', 'Portland Trail Blazers': 'por', 'Sacramento Kings': 'sac',
-  'San Antonio Spurs': 'sas', 'Toronto Raptors': 'tor', 'Utah Jazz': 'uta',
+  'San Antonio Spurs': 'sas', 'Toronto Raptors': 'tor', 'Utah Jazz': 'utah',
   'Washington Wizards': 'wsh',
   // Historical
   'Seattle SuperSonics': 'okc', 'New Jersey Nets': 'bkn', 'Vancouver Grizzlies': 'mem',
-  'Charlotte Bobcats': 'cha', 'New Orleans Hornets': 'nop', 'New Orleans/Oklahoma City Hornets': 'nop',
+  'Charlotte Bobcats': 'cha', 'New Orleans Hornets': 'no', 'New Orleans/Oklahoma City Hornets': 'no',
   // Short names
   'Hawks': 'atl', 'Celtics': 'bos', 'Nets': 'bkn', 'Hornets': 'cha',
   'Bulls': 'chi', 'Cavaliers': 'cle', 'Mavericks': 'dal', 'Nuggets': 'den',
   'Pistons': 'det', 'Warriors': 'gsw', 'Rockets': 'hou', 'Pacers': 'ind',
   'Clippers': 'lac', 'Lakers': 'lal', 'Grizzlies': 'mem', 'Heat': 'mia',
-  'Bucks': 'mil', 'Timberwolves': 'min', 'Pelicans': 'nop', 'Knicks': 'nyk',
+  'Bucks': 'mil', 'Timberwolves': 'min', 'Pelicans': 'no', 'Knicks': 'nyk',
   'Thunder': 'okc', 'Magic': 'orl', '76ers': 'phi', 'Suns': 'phx',
   'Trail Blazers': 'por', 'Blazers': 'por', 'Kings': 'sac', 'Spurs': 'sas',
-  'Raptors': 'tor', 'Jazz': 'uta', 'Wizards': 'wsh', 'SuperSonics': 'okc',
+  'Raptors': 'tor', 'Jazz': 'utah', 'Wizards': 'wsh', 'SuperSonics': 'okc',
 }
 
 const NFL_ABBR: Record<string, string> = {
